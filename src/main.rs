@@ -1,12 +1,38 @@
 use std::fs::read_to_string;
+use std::str::FromStr;
 
-enum Token<'a> {
+#[derive(Debug)]
+enum Token {
     Mut,
-    TypeSpecifier(&'a str),
-    NumberLiteral(i32),
+    TypeSpecifier(String),
+    NumberLiteral(String),
     Equals,
     Semicolon,
-    Symbol(&'a str),
+    Symbol(String),
+}
+
+#[derive(Debug)]
+struct InvalidTokenError;
+
+impl FromStr for Token {
+    type Err = InvalidTokenError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.to_string();
+        match s.as_str() {
+            "mut" => Ok(Self::Mut),
+            "=" => Ok(Self::Equals),
+            ";" => Ok(Self::Semicolon),
+            "i32" => Ok(Self::TypeSpecifier(s)),
+            _ => {
+                if let Ok(_) = s.parse::<i32>() {
+                    Ok(Self::NumberLiteral(s))
+                } else {
+                    Ok(Self::Symbol(s))
+                }
+            }
+        }
+    }
 }
 
 fn split_words(source: &str) -> Vec<String> {
@@ -46,6 +72,10 @@ fn split_words(source: &str) -> Vec<String> {
     words
 }
 
+fn tokenize(words: Vec<String>) -> Vec<Token> {
+    return words.iter().map(|w| Token::from_str(w).unwrap()).collect();
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
@@ -56,7 +86,7 @@ fn main() {
 
     let src = read_to_string(&args[1]).expect("Couldn't read provided source file");
 
-    let tokens = split_words(&src);
+    let tokens = tokenize(split_words(&src));
 
     println!("{:?}", tokens);
 }
