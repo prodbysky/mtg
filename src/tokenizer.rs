@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Mut,
     TypeSpecifier(String),
@@ -46,6 +46,7 @@ impl FromStr for Token {
     }
 }
 
+#[derive(Debug)]
 pub struct Tokenizer {
     source: String,
     pos: usize,

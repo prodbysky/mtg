@@ -1,6 +1,11 @@
-use crate::tokenizer::Tokenizer;
-use std::fs::read_to_string;
+mod ast;
 mod tokenizer;
+
+use std::fs::read_to_string;
+
+use crate::ast::ASTParser;
+use crate::tokenizer::Token;
+use crate::tokenizer::Tokenizer;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -12,8 +17,6 @@ fn main() {
 
     let src = read_to_string(&args[1]).expect("Couldn't read provided source file");
     let tokenizer = Tokenizer::new(src);
-
-    for token in tokenizer {
-        println!("{:?}", token);
-    }
+    let parser = ASTParser::new(tokenizer).parse();
+    println!("{:#?}", parser);
 }
