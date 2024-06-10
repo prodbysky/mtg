@@ -6,7 +6,6 @@ pub enum Token {
     TypeSpecifier(String),
     NumberLiteral(String),
     Equals,
-    Semicolon,
     Symbol(String),
     LParen,
     RParen,
@@ -27,7 +26,6 @@ impl FromStr for Token {
         match s.as_str() {
             "mut" => Ok(Self::Mut),
             "=" => Ok(Self::Equals),
-            ";" => Ok(Self::Semicolon),
             "i32" => Ok(Self::TypeSpecifier(s)),
             "(" => Ok(Self::LParen),
             ")" => Ok(Self::RParen),
@@ -36,7 +34,7 @@ impl FromStr for Token {
             "*" => Ok(Self::Star),
             "/" => Ok(Self::FSlash),
             _ => {
-                if let Ok(_) = s.parse::<i32>() {
+                if s.parse::<i32>().is_ok() {
                     Ok(Self::NumberLiteral(s))
                 } else {
                     Ok(Self::Symbol(s))
@@ -64,7 +62,7 @@ impl Tokenizer {
             tokenizer.current_char = Some(tokenizer.source.as_bytes()[0] as char);
         }
 
-        return tokenizer;
+        tokenizer
     }
 
     fn advance(&mut self) {
@@ -90,7 +88,7 @@ impl Tokenizer {
     fn number_literal(&mut self) -> String {
         let mut buf = String::new();
         while let Some(c) = self.current_char {
-            if c.is_digit(10) {
+            if c.is_ascii_digit() {
                 buf.push(c);
                 self.advance();
             } else {
@@ -114,10 +112,6 @@ impl Tokenizer {
                 self.advance();
                 '='.to_string()
             }
-            Some(';') => {
-                self.advance();
-                ';'.to_string()
-            }
             Some('(') => {
                 self.advance();
                 '('.to_string()
@@ -137,7 +131,7 @@ impl Tokenizer {
             _ => {
                 let mut buffer = String::new();
                 while let Some(c) = self.current_char {
-                    if c.is_whitespace() || c == ';' {
+                    if c.is_whitespace() {
                         break;
                     }
                     buffer.push(c);
@@ -159,7 +153,7 @@ impl Iterator for Tokenizer {
                 continue;
             }
 
-            if c.is_digit(10) {
+            if c.is_ascii_digit() {
                 return Some(Token::NumberLiteral(self.number_literal()));
             }
 
