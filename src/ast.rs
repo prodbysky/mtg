@@ -134,7 +134,12 @@ impl ASTParser {
         node
     }
 
-    pub fn parse(&mut self) -> Option<ASTNode> {
-        self.expression()
+    pub fn parse(&mut self) -> Option<Vec<ASTNode>> {
+        let mut program = vec![];
+        while let Some(_) = self.tokenizer.peek() {
+            program.push(self.expression()?);
+        }
+
+        Some(program)
     }
 }
